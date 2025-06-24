@@ -48,17 +48,25 @@ const roles = [
 
 // --- Main App ---
 export default function OnboardingPage() {
-  // Dil yönetimi
   const [language, setLanguage] = React.useState<Language>(() => typeof window !== "undefined" ? (localStorage.getItem("language") as Language) || "tr" : "tr")
   const { t } = useTranslation(language)
   React.useEffect(() => { localStorage.setItem("language", language) }, [language])
 
-  // Demo butonları için tıklama
+  // Demo akışı için ekran state'i
+  const [screen, setScreen] = React.useState<'onboarding'|'welcome'>('onboarding')
+
+  // Otomatik ilerleme (demo)
+  React.useEffect(() => {
+    if (screen === 'onboarding') {
+      const timer = setTimeout(() => setScreen('welcome'), 2500)
+      return () => clearTimeout(timer)
+    }
+  }, [screen])
+
   function handleDemoClick(type: string) {
-    alert(t('demoAuthAlert', { type }))
+    setScreen('welcome')
   }
 
-  // Dil seçici
   function LanguageSwitcher() {
     return (
       <div className="absolute top-4 right-4 z-10">
@@ -67,6 +75,26 @@ export default function OnboardingPage() {
           <span className="font-medium">{language === 'tr' ? 'TR' : 'EN'}</span>
           <ChevronDown className="w-3 h-3" />
         </Button>
+      </div>
+    )
+  }
+
+  if (screen === 'welcome') {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#eaf6f3] relative px-4">
+        <LanguageSwitcher />
+        <div className="w-full max-w-sm mx-auto flex flex-col items-center justify-center py-10">
+          <div className="mb-6">{logoSvg}</div>
+          <h1 className="text-2xl md:text-3xl font-bold text-center text-gray-800 mb-3 leading-tight">
+            {t('welcomeMessage')}
+          </h1>
+          <p className="text-gray-600 text-center mb-8 text-base md:text-lg">
+            {t('assessmentComplete')}
+          </p>
+          <Button className="w-full text-base font-semibold py-2" onClick={() => setScreen('onboarding')}>
+            {t('back')}
+          </Button>
+        </div>
       </div>
     )
   }
@@ -112,3 +140,4 @@ const logoSvg = (
     <circle cx="24" cy="20" r="2" fill="#3BA17C"/>
   </svg>
 )
+
